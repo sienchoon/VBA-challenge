@@ -148,10 +148,6 @@ For Each ws In Worksheets
                 Dim Greatest_Decrease As Double
                 Dim Greatest_Volume As Double
     
-                'empty string for ticker name of max and min % change
-                Greatest_Increase_Ticker = " "
-                Greatest_Decrease_Ticker = " "
-                Greatest_Volume_Ticker = " "
                 'initialise the values to 0
                 Greatest_Increase = 0
                 Greatest_Decrease = 0
