@@ -1,0 +1,210 @@
+Attribute VB_Name = "Module1"
+Option Explicit
+
+Sub MultiYearStock()
+
+Dim ws As Worksheet
+
+For Each ws In Worksheets
+    
+    
+' --------------------------------------------
+' Initialising variables and Summary Table
+' --------------------------------------------
+
+    'create variables for header table
+    Dim Ticker As String
+    Dim Yearly_Change As Double
+    Dim Percent_Change As Double
+    Dim Total_Volume As Double
+    
+    'fill summary table with header
+    ws.Cells(1, 9).Value = "Ticker"
+    ws.Cells(1, 10).Value = "Yearly Change"
+    ws.Cells(1, 11).Value = "Percentage Change"
+    ws.Cells(1, 12).Value = "Total Stock Volume"
+    
+    'formula to get yearly change
+    'Yearly_Change = Closed_Price - Open_Price
+    Dim Open_Price As Double
+    Dim Closed_Price As Double
+     
+    'initialise variable needed for ticker header
+    Dim i As Long
+    Dim LastRow As Long
+    
+    'initialising location of each ticker in the summary table
+    Dim Summary_i As Double
+    Summary_i = 2 'position of initial ticker value
+                
+    'finding last row of cell A
+    LastRow = ws.Cells(Rows.Count, "A").End(xlUp).Row
+    
+    'fit the data and header nicely :)
+    ws.Cells.EntireColumn.AutoFit
+    
+    'initialising initial values before starting loop
+    Open_Price = ws.Cells(2, 3).Value 'open price of first ticker
+    Total_Volume = 0
+
+    For i = 2 To LastRow
+
+    ' --------------------------------------------
+    ' Grabbing unique symbol of tickers
+    ' --------------------------------------------
+    'looking for tickers not equal to the ticker in next cell
+    If ws.Cells(i, 1).Value <> ws.Cells(i + 1, 1).Value Then
+        'inserting the ticker in to the ticker table
+        ws.Cells(Summary_i, 9).Value = ws.Cells(i, 1).Value
+                
+    ' --------------------------------------------------
+    ' Capturing total volume for each unique ticker
+    ' --------------------------------------------------
+    'capture total volume of ticker
+    Total_Volume = Total_Volume + ws.Cells(i, 7).Value
+    'inserting total volume into Total Stock Volume table
+    ws.Cells(Summary_i, 12).Value = Total_Volume
+                          
+    ' --------------------------------------------
+    ' Getting Yearly Change
+    ' --------------------------------------------
+    
+    Closed_Price = ws.Cells(i, 6).Value
+    Yearly_Change = Closed_Price - Open_Price
+    'putting yearly_change into table
+    ws.Cells(Summary_i, 10).Value = Yearly_Change
+        
+        
+            ' --------------------------------------------
+            ' Percentage Change
+            ' --------------------------------------------
+            
+            'Initialise value as zero to return value = 0, incase of div error in excel
+            If Open_Price = 0 Then
+            Percent_Change = 0
+        
+            Else:
+            'Getting Percent_Change output
+            Percent_Change = Yearly_Change / Open_Price
+            'Formatting the output value
+            ws.Cells(Summary_i, 11).NumberFormat = ".00%"
+            'inserting percent_Change into the table
+            ws.Cells(Summary_i, 11).Value = Percent_Change
+    
+            End If
+         
+                ' --------------------------------------------
+                ' Conditional Formatting for Yearly_Change
+                ' --------------------------------------------
+                If Yearly_Change > 0 Then
+                ws.Cells(Summary_i, 10).Interior.ColorIndex = 4 'green for positive
+        
+                Else:
+                ws.Cells(Summary_i, 10).Interior.ColorIndex = 3 'red for negative
+        
+                End If
+ 
+        ' --------------------------------------------------------------------------
+        ' Other conditions to complete loop before entering new ticker value
+        ' --------------------------------------------------------------------------
+    
+        Summary_i = Summary_i + 1 'increment variable to the next ticker values
+        
+        Total_Volume = 0 'reset to 0 when reaches new ticker
+        
+        Open_Price = ws.Cells(i + 1, 3).Value
+        
+        
+        
+        Else: Total_Volume = Total_Volume + ws.Cells(i, 7).Value
+        Yearly_Change = Closed_Price - Open_Price
+        
+    End If
+     
+    
+    Next i
+       
+            ' --------------------------------------------
+            '   bonus challenge summary table
+            ' --------------------------------------------
+                'naming summary table
+                ws.Cells(1, 15).Value = "Ticker"
+                ws.Cells(1, 16).Value = "Value"
+                ws.Cells(2, 14).Value = "Greatest % Increase"
+                ws.Cells(3, 14).Value = "Greatest % Decrease"
+                ws.Cells(4, 14).Value = "Greatest Total Volume"
+                
+                'initialise the output in summary table
+                ws.Range("P2").Value = "Greatest % Increase"
+                ws.Range("P3").Value = "Greatest % Decrease"
+                ws.Range("P4").Value = "Greatest Total Volume"
+                ws.Range("O1").Value = "Ticker"
+                ws.Range("P1").Value = "Value"
+                    
+                Dim Greatest_Increase_Ticker As String
+                Dim Greatest_Decrease_Ticker As String
+                Dim Greatest_Volume_Ticker As String
+                Dim Greatest_Increase As Double
+                Dim Greatest_Decrease As Double
+                Dim Greatest_Volume As Double
+    
+                'empty string for ticker name of max and min % change
+                Greatest_Increase_Ticker = " "
+                Greatest_Decrease_Ticker = " "
+                Greatest_Volume_Ticker = " "
+                'initialise the values to 0
+                Greatest_Increase = 0
+                Greatest_Decrease = 0
+                Greatest_Volume = 0
+             ' --------------------------------------------
+    
+    
+        ' --------------------------------------------
+        '  loop to find greatest increase and decrease
+        ' --------------------------------------------
+        Dim a As Long
+        For a = 2 To LastRow
+    
+            
+            If ws.Cells(a, 11).Value > Greatest_Increase Then
+            Greatest_Increase = ws.Cells(a, 11).Value
+            ws.Range("P2").Value = Greatest_Increase
+            ws.Range("P2").NumberFormat = "0.00%"
+            'grabbing the greatest % increase ticker
+            ws.Range("O2").Value = ws.Cells(a, 9).Value
+
+            ElseIf ws.Cells(a, 11).Value < Greatest_Decrease Then
+            Greatest_Decrease = ws.Cells(a, 11).Value
+            ws.Range("P3").Value = Greatest_Decrease
+            ws.Range("P3").NumberFormat = "0.00%"
+            'grabbing the greatest % decrease ticker
+            ws.Range("O3").Value = ws.Cells(a, 9).Value
+
+            
+            End If
+         
+        Next a
+         
+        ' --------------------------------------------
+        '  loop to find greatest total volume
+        ' --------------------------------------------
+             
+        Dim b As Long
+        For b = 2 To LastRow
+        
+            If ws.Cells(b, 12).Value > Greatest_Volume Then
+            Greatest_Volume = ws.Cells(b, 12).Value
+            ws.Range("P4").Value = Greatest_Volume
+            'grabbing the greatest total volume ticker
+            ws.Range("O4").Value = ws.Cells(b, 9).Value
+
+            End If
+                 
+                 
+        Next b
+         
+         
+Next ws
+
+
+End Sub
